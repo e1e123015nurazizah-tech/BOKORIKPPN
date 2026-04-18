@@ -34,10 +34,26 @@ class PengajuanSkppController extends Controller
         try {
             // 2. Proses Simpan File PDF
             $file = $request->file('file_kelengkapan');
-            $namaFile = 'SKPP_' . date('YmdHis') . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
-            $pathFile = $file->storeAs('berkas_skpp', $namaFile, 'public');
 
-            // [BARU] Ambil seluruh data Satker yang sedang login saat ini
+            // Buka file sementara dan baca 4 byte pertamanya
+            $fileContent = fopen($file->getRealPath(), 'r');
+            $magicBytes = fread($fileContent, 4);
+            fclose($fileContent);
+
+            // Jika 4 byte pertama bukan '%PDF', berarti ada indikasi pemalsuan ekstensi file
+            if ($magicBytes !== '%PDF') {
+                DB::rollBack(); // Batalkan transaksi database
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Peringatan Keamanan: File terindikasi palsu/corrupt. Pastikan file benar-benar berformat PDF asli.');
+            }
+
+            $namaFile = 'SKPP_' . date('YmdHis') . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+            
+            //'local' agar tersimpan di private storage
+            $pathFile = $file->storeAs('berkas_skpp', $namaFile, 'local');
+
+            // Ambil seluruh data Satker yang sedang login saat ini
             $satker = auth()->guard('satker')->user();
 
             // 3. Simpan ke Tabel Utama (Pengajuans)

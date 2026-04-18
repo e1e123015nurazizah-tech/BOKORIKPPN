@@ -127,7 +127,7 @@
                             @endphp
 
                             @if($d->detailGaji && !empty($namaFile))
-                                <a href="{{ asset('storage/' . $namaFile) }}" target="_blank" 
+                                <a href="{{ route('dokumen.view', ['kategori' => 'gajiweb', 'id' => $d->id, 'filename' => 'Dokumen_GajiWeb_' . $d->id . '.pdf']) }}" target="_blank" 
                                 class="inline-flex items-center px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-bold hover:bg-red-50 transition-all shadow-sm">
                                     <i class="fas fa-file-pdf mr-2 text-sm"></i> BUKA FILE
                                 </a>

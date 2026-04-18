@@ -88,7 +88,7 @@
                             #{{ $d->nomor_tiket }}
                         </td>
                         
-                        <<td class="px-6 py-5 text-center whitespace-nowrap">
+                        <td class="px-6 py-5 text-center whitespace-nowrap">
                             @php
                                 $badge = [
                                     'Menunggu' => 'bg-amber-100 text-amber-700 border border-amber-200',

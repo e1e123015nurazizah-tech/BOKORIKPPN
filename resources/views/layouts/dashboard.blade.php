@@ -240,7 +240,13 @@
                         
                         if ($isAdmin) {
                             $name = $user->nama_lengkap;
-                            $avatar = $user->foto_profil ? asset('storage/profile_admin/' . $user->foto_profil) : "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=0D8ABC&color=fff";
+                            
+                            // PERBAIKAN: Gunakan route() untuk memanggil foto profil admin yang tersimpan di private
+                            if ($user->foto_profil) {
+                                $avatar = route('profil.foto', basename($user->foto_profil));
+                            } else {
+                                $avatar = "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=0D8ABC&color=fff";
+                            }
                             
                             if ($user->role === 'superadmin') {
                                 $roleLabel = 'SUPER ADMIN';
@@ -251,6 +257,7 @@
                             }
                         } else {
                             $name = $user->nama_satker;
+                            // Satker belum punya fitur upload foto, jadi pakai UI Avatars
                             $avatar = "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=0D8ABC&color=fff";
                             $roleLabel = 'SATUAN KERJA';
                         }

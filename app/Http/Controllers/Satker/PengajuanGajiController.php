@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 
 class PengajuanGajiController extends Controller
 {
-    // Fungsi ini akan dijalankan saat Satker klik tombol "Kirim Pengajuan"
     public function store(Request $request)
     {
         // 1. JARING PENGAMAN: Validasi data agar form tidak diisi sembarangan
@@ -32,12 +31,25 @@ class PengajuanGajiController extends Controller
         try {
             // 3. PROSES UPLOAD FILE PDF KE SERVER
             $file = $request->file('file_kelengkapan');
+
+            // --- AWAL PERBAIKAN MAGIC BYTES (Keamanan Anti-Malware) ---
+            // Membaca 4 karakter pertama untuk memastikan file benar-benar ber-DNA PDF
+            $magicBytes = file_get_contents($file->getRealPath(), false, null, 0, 4);
+
+            if ($magicBytes !== '%PDF') {
+                DB::rollBack(); // Batalkan penyimpanan database
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Peringatan Keamanan: File terindikasi palsu/corrupt. Pastikan file benar-benar berformat PDF asli.');
+            }
+            // --- AKHIR PERBAIKAN MAGIC BYTES ---
             
             // Membuat nama file yang unik biar tidak tertukar (Contoh: GajiWeb_20260408153022_XYZ12.pdf)
             $namaFile = 'GajiWeb_' . date('YmdHis') . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
             
-            // Menyimpan file PDF ke dalam folder: public/storage/berkas_gajiweb
-            $pathFile = $file->storeAs('berkas_gajiweb', $namaFile, 'public');
+            // [PERBAIKAN KEAMANAN TINGKAT TINGGI]
+            // Mengubah 'public' menjadi 'local' agar file masuk ke folder rahasia (private) bawaan Laravel 11
+            $pathFile = $file->storeAs('berkas_gajiweb', $namaFile, 'local');
 
             // 4. SIMPAN DATA KE TABEL UTAMA (pengajuans)
             $pengajuan = Pengajuan::create([
@@ -48,7 +60,7 @@ class PengajuanGajiController extends Controller
                 'kategori_layanan' => 'GajiWeb',
                 'status'           => 'Menunggu',
                 // Mengambil ID user Satker yang sedang login saat ini
-                'satker_id'        => auth()->id(), 
+                'satker_id'        => auth()->guard('satker')->id(), // Pastikan pakai guard satker
             ]);
 
             // 5. SIMPAN DATA KE TABEL RINCIAN (detail_gajiwebs)

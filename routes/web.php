@@ -90,6 +90,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/profil-admin', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profil.update');
     // Menghapus foto profil Admin secara permanen dari server dan database
     Route::delete('/profil-admin/hapus-foto', [App\Http\Controllers\Admin\ProfileController::class, 'hapusFoto'])->name('admin.profil.hapus_foto');
+    // Jalur aman untuk menampilkan foto profil dari folder private
+    Route::get('/lihat-profil/{filename}', [App\Http\Controllers\Admin\ProfileController::class, 'showFoto'])->name('profil.foto');
 
     // --- KELOMPOK MENU KELOLA ADMIN (Khusus Superadmin) ---
     // Menampilkan tabel daftar seluruh pegawai/Admin KPPN
@@ -145,7 +147,15 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/maintenance', [App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('admin.maintenance.index');
     // Mengeksekusi penghapusan file PDF atau penghapusan permanen data pengajuan berdasarkan tahun
     Route::post('/maintenance/cleanup', [App\Http\Controllers\Admin\MaintenanceController::class, 'cleanup'])->name('admin.maintenance.cleanup');
+});
 
+// ==========================================
+// JALUR AKSES FILE AMAN (Proxy Route)
+// ==========================================
+// Rute ini digabung agar Satker maupun Admin bisa mengakses dengan satu jalur yang sama
+Route::middleware(['auth:satker,admin'])->group(function () {
+        Route::get('/lihat-dokumen/{kategori}/{id}/{filename?}', [App\Http\Controllers\Admin\PengajuanController::class, 'viewPdf'])
+            ->name('dokumen.view');
 });
 
 

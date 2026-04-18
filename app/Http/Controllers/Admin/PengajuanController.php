@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AllPengajuanExport;
+use Illuminate\Support\Facades\Storage;
 
 class PengajuanController extends Controller
 {
@@ -265,5 +266,68 @@ class PengajuanController extends Controller
         
         return Excel::download(new \App\Exports\ApproverSkppExport($tahunAktif), "Rekap_SKPP_{$tahunAktif}.xlsx");
     }
-    
+    /**
+     * 6. Logika Akses File PDF Aman (Proxy Route)
+     */
+    public function viewPdf($kategori, $id, $filename = null)
+    {
+        // 1. Cari data pengajuan utama berdasarkan ID ($id sekarang adalah ID Pengajuan)
+        $pengajuan = Pengajuan::findOrFail($id);
+        $kategori = strtolower($kategori);
+
+        // 2. Ambil detail file berdasarkan kategori
+        if ($kategori === 'skpp') {
+            $detail = $pengajuan->detailSkpp;
+        } elseif ($kategori === 'gajiweb') {
+            $detail = $pengajuan->detailGaji; 
+        } elseif ($kategori === 'ppnpn') {
+            $detail = $pengajuan->detailPpnpn;
+        } else {
+            abort(404, 'Kategori pengajuan tidak valid.');
+        }
+
+        // Jika rincian data tidak ada
+        if (!$detail) {
+            abort(404, 'Data rincian tidak ditemukan.');
+        }
+
+        // 3. VALIDASI HAK AKSES (Keamanan Lapis 2)
+        if (Auth::guard('satker')->check()) {
+            // Jika Satker: Hanya boleh melihat dokumen miliknya sendiri
+            if ($pengajuan->satker_id !== Auth::guard('satker')->id()) {
+                abort(403, 'Akses Ditolak! Anda tidak diizinkan melihat dokumen satker lain.');
+            }
+        } elseif (Auth::guard('admin')->check()) {
+            $adminLogin = Auth::guard('admin')->user();
+            
+            // Jika Admin Biasa: Boleh lihat jika tiket belum diambil ATAU dia yang sedang kerjakan
+            if ($adminLogin->role === 'admin' && $pengajuan->admin_id !== null && $pengajuan->admin_id !== $adminLogin->id) {
+                abort(403, 'Akses Ditolak! Dokumen ini sedang ditangani oleh petugas lain.');
+            }
+        } else {
+            abort(401, 'Silakan login terlebih dahulu.');
+        }
+
+        // 4. Cari lokasi fisik file secara otomatis (baik di 'local' maupun 'public')
+        $path = $detail->file_kelengkapan;
+        $realPath = null;
+
+        if (Storage::disk('local')->exists($path)) {
+            $realPath = Storage::disk('local')->path($path);
+        } elseif (Storage::disk('public')->exists($path)) {
+            $realPath = Storage::disk('public')->path($path);
+        } else {
+            abort(404, 'Maaf, berkas fisik PDF tidak ditemukan di server.');
+        }
+
+        // 5. Menentukan Nama File saat di-download/dibuka (Ditambah ID Pengajuan)
+        // Hasilnya akan menjadi: Dokumen_SKPP_23.pdf
+        $namaFileDownload = 'Dokumen_' . strtoupper($kategori) . '_' . $id . '.pdf';
+
+        // 6. Tampilkan file PDF langsung di tab browser dengan nama yang sudah disesuaikan
+        return response()->file($realPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $namaFileDownload . '"'
+        ]);
+    }
 }

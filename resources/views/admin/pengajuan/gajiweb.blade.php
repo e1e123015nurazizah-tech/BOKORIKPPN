@@ -327,7 +327,7 @@
                             @include('admin.pengajuan.partials._detail_gajiweb')
 
                             <div class="mt-8">
-                                <a :href="'/storage/' + (dataDetail.detail_gaji?.file_kelengkapan || '')" 
+                                <a :href="'/lihat-dokumen/gajiweb/' + dataDetail.id + '/Dokumen_GajiWeb_' + dataDetail.id + '.pdf'" 
                                 target="_blank" 
                                 class="flex items-center justify-center gap-3 bg-red-50 text-red-600 font-black py-4 rounded-2xl border border-red-100 hover:bg-red-100 transition-all text-xs uppercase tracking-widest shadow-sm">
                                     <i class="fas fa-file-pdf text-lg"></i> Buka Berkas Lampiran PDF

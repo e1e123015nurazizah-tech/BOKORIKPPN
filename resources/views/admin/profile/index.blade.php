@@ -39,8 +39,8 @@
                         <div class="w-40 h-40 rounded-[2rem] overflow-hidden border-4 border-blue-50 shadow-lg relative bg-gray-100">
                             {{-- PERBAIKAN DI SINI: Hapus 'profile_admin/' dari pemanggilan asset() --}}
                             <img id="preview" 
-                                 src="{{ Auth::guard('admin')->user()->foto_profil ? asset('storage/'.Auth::guard('admin')->user()->foto_profil) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::guard('admin')->user()->nama_lengkap).'&background=0D8ABC&color=fff&size=256' }}" 
-                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                src="{{ Auth::guard('admin')->user()->foto_profil ? route('profil.foto', basename(Auth::guard('admin')->user()->foto_profil)) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::guard('admin')->user()->nama_lengkap).'&background=0D8ABC&color=fff&size=256' }}" 
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                             
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                 <i class="fas fa-camera text-white text-3xl"></i>

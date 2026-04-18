@@ -151,7 +151,7 @@
                             @endphp
 
                             @if($d->detailSkpp && !empty($pathFile))
-                                <a href="{{ asset('storage/' . $pathFile) }}" target="_blank" 
+                                <a href="{{ route('dokumen.view', ['kategori' => 'skpp', 'id' => $d->id, 'filename' => 'Dokumen_SKPP_' . $d->id . '.pdf']) }}" target="_blank" 
                                 class="inline-flex items-center px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-bold hover:bg-red-50 transition-all shadow-sm">
                                     <i class="fas fa-file-pdf mr-2 text-sm"></i> BUKA FILE
                                 </a>

@@ -209,12 +209,22 @@
                                     @endif
 
                                 @elseif($item->status === 'Diproses')
-                                    <button @click="modalProses = true; mode = 'view'; dataDetail = {{ json_encode($item) }}; actionUrl = '';" class="text-gray-400 hover:text-blue-600 p-2"><i class="fas fa-eye text-lg"></i></button>
-                                    @if($item->admin_id === Auth::guard('admin')->id() || $adminRole === 'superadmin' || $adminRole === 'approver')
-                                        <button @click="modalProses = true; mode = 'proses'; dataDetail = {{ json_encode($item) }}; actionUrl = '{{ route('admin.pengajuan.proses', $item->id) }}';" class="text-gray-400 hover:text-amber-500 p-2"><i class="fas fa-edit text-lg"></i></button>
-                                    @else
-                                        <span class="text-[9px] font-bold text-gray-400 uppercase italic">Proses Admin Lain</span>
-                                    @endif
+                                {{-- Approver hanya boleh LIHAT jika status masih Diproses --}}
+                                <button @click="modalProses = true; mode = 'view'; dataDetail = {{ json_encode($item) }}; actionUrl = '';" class="text-gray-400 hover:text-blue-600 p-2">
+                                    <i class="fas fa-eye text-lg"></i>
+                                </button>
+
+                                @if($item->admin_id === Auth::guard('admin')->id() || $adminRole === 'superadmin')
+                                    {{-- Hanya Admin yang mengerjakan atau Superadmin yang boleh EDIT --}}
+                                    <button @click="modalProses = true; mode = 'proses'; dataDetail = {{ json_encode($item) }}; actionUrl = '{{ route('admin.pengajuan.proses', $item->id) }}';" class="text-gray-400 hover:text-amber-500 p-2">
+                                        <i class="fas fa-edit text-lg"></i>
+                                    </button>
+                                @elseif($adminRole === 'approver')
+                                    {{-- Tulisan untuk Approver agar tahu ini jatah operator --}}
+                                    <span class="text-[9px] font-bold text-blue-400 uppercase italic px-2">Operator Sedang Menangani</span>
+                                @else
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase italic">Proses Admin Lain</span>
+                                @endif
 
                                 @elseif($item->status === 'Menunggu Approval')
                                     <button @click="modalProses = true; mode = 'view'; dataDetail = {{ json_encode($item) }}; actionUrl = '';" class="text-gray-400 hover:text-blue-600 p-2"><i class="fas fa-eye text-lg"></i></button>
@@ -240,9 +250,25 @@
                                 @endif
 
                                 @php
-                                    $bolehHapus = ($adminRole === 'superadmin' || $adminRole === 'approver') || 
-                                                 ($adminRole === 'admin' && !in_array($item->status, ['Menunggu Approval', 'Selesai']));
+                                    // 1. Pengecekan ID dengan ==
+                                    $isOwner = ($item->admin_id == Auth::guard('admin')->id());
+                                    $bolehHapus = false;
+                                    
+                                    // 2. Bersihkan spasi & huruf kecil
+                                    $roleBersih = strtolower(trim($adminRole));
+
+                                    if ($roleBersih === 'superadmin') {
+                                        // Superadmin bebas hapus kapan saja
+                                        $bolehHapus = true; 
+                                    } elseif ($roleBersih === 'approver') {
+                                        // Approver dilarang hapus saat status sedang 'Diproses'
+                                        $bolehHapus = ($item->status !== 'Diproses'); 
+                                    } elseif ($roleBersih === 'operator') { 
+                                        // Operator HANYA BISA hapus jika dia adalah PIC & Belum dikirim ke pimpinan
+                                        $bolehHapus = ($isOwner && !in_array($item->status, ['Menunggu Approval', 'Selesai']));
+                                    }
                                 @endphp
+                                
                                 @if($bolehHapus)
                                     <form action="{{ route('admin.pengajuan.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus Permanen?');" class="inline-block">
                                         @csrf @method('DELETE')
@@ -293,7 +319,9 @@
                             </div>
                             @include('admin.pengajuan.partials._detail_skpp')
                             <div class="mt-8">
-                                <a :href="'/storage/' + (dataDetail.detail_skpp?.file_kelengkapan || '')" target="_blank" class="flex items-center justify-center gap-3 bg-red-50 text-red-600 font-black py-4 rounded-2xl border border-red-100 hover:bg-red-100 transition-all text-xs uppercase tracking-widest shadow-sm">
+                                <a :href="'/lihat-dokumen/skpp/' + dataDetail.id + '/Dokumen_SKPP_' + dataDetail.id + '.pdf'" 
+                                target="_blank" 
+                                class="flex items-center justify-center gap-3 bg-red-50 text-red-600 font-black py-4 rounded-2xl border border-red-100 hover:bg-red-100 transition-all text-xs uppercase tracking-widest shadow-sm">
                                     <i class="fas fa-file-pdf text-lg"></i> Buka Berkas Lampiran PDF
                                 </a>
                             </div>
