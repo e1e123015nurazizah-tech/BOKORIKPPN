@@ -124,7 +124,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::put('/kelola-satker/{id}/reset', [App\Http\Controllers\Admin\SatkerController::class, 'resetPassword'])->name('admin.satker.reset');
     // Menghapus akun Satker secara permanen dari sistem
     Route::delete('/kelola-satker/{id}', [App\Http\Controllers\Admin\SatkerController::class, 'destroy'])->name('admin.satker.destroy');
-
+    
     // --- KELOMPOK MENU KELOLA DATA PENGAJUAN (Validasi Dokumen) ---
     // Menampilkan tabel daftar seluruh pengajuan yang masuk dari semua Satker
     Route::get('/pengajuan', [App\Http\Controllers\Admin\PengajuanController::class, 'index'])->name('admin.pengajuan.index');

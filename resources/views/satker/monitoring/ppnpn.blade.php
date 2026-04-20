@@ -6,36 +6,32 @@
         <h1 class="text-2xl font-black text-[#1e3a8a] tracking-tight uppercase">MONITORING REKON PPNPN</h1>
         <p class="text-gray-500 mt-2 text-lg italic">Gunakan filter di bawah, tekan Enter untuk memproses.</p>
     </div>
-
-    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
-        <form action="{{ route('satker.monitoring.ppnpn') }}" method="GET" class="flex flex-wrap md:flex-nowrap gap-4 items-end">
-            
-            <div class="flex-1 min-w-[200px]">
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+            <form action="{{ route('satker.monitoring.ppnpn') }}" method="GET" class="flex flex-wrap lg:flex-nowrap gap-4 items-end w-full">
+            {{-- Kecilkan min-w agar sama dengan gajiweb (150px) --}}
+            <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-bold text-[#1e3a8a] mb-2">Bulan Periode</label>
                 <input type="text" name="bulan" value="{{ request('bulan') }}" placeholder="JANUARI {{ $tahunAktif }}" 
-                       class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all uppercase">
+                    class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all uppercase">
             </div>
 
             <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-bold text-[#1e3a8a] mb-2">ID ADK</label>
                 <input type="text" name="id_adk" value="{{ request('id_adk') }}" placeholder="Cari ID ADK" 
-                       class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
 
-            <div class="flex-1 min-w-[250px]">
+            {{-- Jenis ADK: Gunakan 200px saja, jangan 250px agar tidak serakah ruang --}}
+            <div class="flex-1 min-w-[200px]">
                 <label class="block text-sm font-bold text-[#1e3a8a] mb-2">Jenis ADK</label>
                 <select name="jenis_adk" onchange="this.form.submit()" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-xs">
                     <option value="">-- Semua Jenis ADK --</option>
-                    <option value="Pengajuan Baru" {{ request('jenis_adk') == 'Pengajuan Baru' ? 'selected' : '' }}>
-                        Pengajuan Baru
-                    </option>
-                    <option value="Pembatalan/Penghapusan" {{ request('jenis_adk') == 'Pembatalan/Penghapusan' ? 'selected' : '' }}>
-                        Pembatalan/Penghapusan
-                    </option>
+                    <option value="Pengajuan Baru" {{ request('jenis_adk') == 'Pengajuan Baru' ? 'selected' : '' }}>Pengajuan Baru</option>
+                    <option value="Pembatalan/Penghapusan" {{ request('jenis_adk') == 'Pembatalan/Penghapusan' ? 'selected' : '' }}>Pembatalan/Penghapusan</option>
                 </select>
             </div>
 
-            <div class="flex-1 min-w-[200px]">
+            <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-bold text-[#1e3a8a] mb-2">Status</label>
                 <select name="status" onchange="this.form.submit()" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                     <option value="">-- Semua Status --</option>
@@ -46,11 +42,12 @@
                 </select>
             </div>
 
-            <div class="flex gap-2">
+            {{-- Gunakan flex-none agar tombol ukurannya kaku (tidak membesar/mengecil) --}}
+            <div class="flex flex-none gap-3">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md shadow-blue-500/30">
                     Filter
                 </button>
-                <a href="{{ route('satker.monitoring.ppnpn') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold py-3 px-6 rounded-xl transition-all flex items-center">
+                <a href="{{ route('satker.monitoring.ppnpn') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center text-sm">
                     Reset
                 </a>
             </div>

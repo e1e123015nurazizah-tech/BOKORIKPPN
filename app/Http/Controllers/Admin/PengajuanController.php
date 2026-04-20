@@ -308,8 +308,14 @@ class PengajuanController extends Controller
             abort(401, 'Silakan login terlebih dahulu.');
         }
 
-        // 4. Cari lokasi fisik file secara otomatis (baik di 'local' maupun 'public')
+        // 4. Validasi Ekstra: Cek apakah nama file sudah dikosongkan saat maintenance
         $path = $detail->file_kelengkapan;
+        
+        if (empty($path)) {
+            abort(404, 'Maaf, Dokumen PDF ini sudah dibersihkan/dihapus dari server saat proses Maintenance.');
+        }
+
+        // 5. Cari lokasi fisik file secara otomatis (baik di 'local' maupun 'public')
         $realPath = null;
 
         if (Storage::disk('local')->exists($path)) {
@@ -317,14 +323,18 @@ class PengajuanController extends Controller
         } elseif (Storage::disk('public')->exists($path)) {
             $realPath = Storage::disk('public')->path($path);
         } else {
-            abort(404, 'Maaf, berkas fisik PDF tidak ditemukan di server.');
+            abort(404, 'Maaf, berkas fisik PDF tidak ditemukan di folder server.');
         }
 
-        // 5. Menentukan Nama File saat di-download/dibuka (Ditambah ID Pengajuan)
-        // Hasilnya akan menjadi: Dokumen_SKPP_23.pdf
+        // --- TAMBAHAN SATPAM LAPIS 2: Pastikan yang ditemukan adalah FILE, bukan FOLDER ---
+        if (is_dir($realPath)) {
+            abort(404, 'Maaf, Dokumen PDF tidak valid atau sudah dibersihkan.');
+        }
+
+        // 6. Menentukan Nama File saat di-download/dibuka (Ditambah ID Pengajuan)
         $namaFileDownload = 'Dokumen_' . strtoupper($kategori) . '_' . $id . '.pdf';
 
-        // 6. Tampilkan file PDF langsung di tab browser dengan nama yang sudah disesuaikan
+        // 7. Tampilkan file PDF langsung di tab browser dengan nama yang sudah disesuaikan
         return response()->file($realPath, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $namaFileDownload . '"'

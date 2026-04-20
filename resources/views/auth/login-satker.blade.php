@@ -1,6 +1,9 @@
 @extends('layouts.auth')
 
 @section('content')
+{{-- Memanggil JS reCAPTCHA --}}
+{!! NoCaptcha::renderJs() !!}
+
 <form action="{{ route('login.post') }}" method="POST">
     @csrf
     
@@ -37,9 +40,20 @@
         </div>
     </div>
 
+    <div class="mb-6 flex flex-col items-center">
+        {!! NoCaptcha::display() !!}
+
+        @if ($errors->has('g-recaptcha-response'))
+            <p class="text-red-500 text-xs mt-2 font-semibold italic">
+                <i class="fas fa-robot"></i> {{ $errors->first('g-recaptcha-response') }}
+            </p>
+        @endif
+    </div>
+
     <div class="flex justify-end mb-8">
-        <a href="https://wa.me/6281234567890?text=Halo%20Admin%20BOKORI" target="_blank" 
-           class="text-sm font-semibold text-[#1075BC] hover:text-[#0c5c94] transition-colors">
+        <a href="https://api.whatsapp.com/send?{{ http_build_query(['phone' => '6285128041983', 'text' => 'Halo Admin BOKORI, saya lupa password untuk akun satker saya.']) }}" 
+        target="_blank" 
+        class="text-sm font-semibold text-[#1075BC] hover:text-[#0c5c94] transition-colors">
             Lupa Password?
         </a>
     </div>

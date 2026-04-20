@@ -121,10 +121,23 @@ class SatkerController extends Controller
         ]);
 
         try {
-            Excel::import(new SatkersImport, $request->file('file_excel'));
-            return back()->with('success', 'Data Satker berhasil di-import dari Excel!');
+            // 1. Panggil class Import-nya ke dalam variabel
+            $import = new SatkersImport();
+            
+            // 2. Jalankan proses import
+            Excel::import($import, $request->file('file_excel'));
+
+            // 3. Rakit pesan dinamis berdasarkan hasil hitungan dari file Import
+            $pesan = "Import Selesai! Sebanyak {$import->berhasil} Satker berhasil didaftarkan.";
+            
+            if ($import->gagal > 0) {
+                $pesan .= " Namun, terdapat {$import->gagal} baris yang terlewat (karena Kode Satker sudah terdaftar atau datanya kosong).";
+            }
+
+            return back()->with('success', $pesan);
+
         } catch (\Exception $e) {
-            return back()->withErrors(['pesan' => 'Gagal meng-import file. Pastikan format kolom benar.']);
+            return back()->withErrors(['pesan' => 'Gagal meng-import file. Pastikan format judul kolom di Excel sudah benar. Error: ' . $e->getMessage()]);
         }
     }
 

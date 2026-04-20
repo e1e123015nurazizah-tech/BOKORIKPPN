@@ -18,16 +18,22 @@ class AuthController extends Controller
     // Proses login Satker (STRICT IP-BASED BLOCK)
     public function loginSatkerPost(Request $request)
     {
+        // === TAMBAHAN VALIDASI RECAPTCHA SATKER ===
         $request->validate([
             'kode_satker' => 'required',
             'password' => 'required',
+            'g-recaptcha-response' => 'required|captcha'
+        ], [
+            'g-recaptcha-response.required' => 'Wajib mencentang kotak "I\'m not a robot"!',
+            'g-recaptcha-response.captcha'  => 'Verifikasi Captcha gagal/kadaluarsa. Silakan centang ulang.'
         ]);
+        // ==========================================
 
         // 1. Kunci blokir hanya berdasarkan IP Perangkat
         $throttleKey = 'login_block|' . $request->ip();
 
-        // 2. Cek blokir (Maksimal 2x percobaan salah)
-        if (RateLimiter::tooManyAttempts($throttleKey, 2)) {
+        // 2. Cek blokir (Maksimal 5x percobaan salah)
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
             $minutes = ceil($seconds / 60);
 
@@ -48,7 +54,7 @@ class AuthController extends Controller
         // 4. JIKA GAGAL: Catat kegagalan (Blokir 300 detik = 5 menit)
         RateLimiter::hit($throttleKey, 300);
 
-        $sisaPercobaan = 2 - RateLimiter::attempts($throttleKey);
+        $sisaPercobaan = 5 - RateLimiter::attempts($throttleKey);
         $pesanError = ($sisaPercobaan > 0) 
             ? "Kode Satker atau Password salah! (Sisa percobaan perangkat: {$sisaPercobaan}x)" 
             : "Terlalu banyak kegagalan. Perangkat Anda diblokir selama 5 menit.";
@@ -65,16 +71,22 @@ class AuthController extends Controller
     // Proses login Admin (STRICT IP-BASED BLOCK)
     public function loginAdminPost(Request $request)
     {
+        // === TAMBAHAN VALIDASI RECAPTCHA ADMIN ===
         $request->validate([
             'nip' => 'required',
             'password' => 'required',
+            'g-recaptcha-response' => 'required|captcha'
+        ], [
+            'g-recaptcha-response.required' => 'Wajib mencentang kotak "I\'m not a robot"!',
+            'g-recaptcha-response.captcha'  => 'Verifikasi Captcha gagal/kadaluarsa. Silakan centang ulang.'
         ]);
+        // =========================================
 
         // 1. Kunci blokir hanya berdasarkan IP Perangkat
         $throttleKey = 'login_block|' . $request->ip();
 
-        // 2. Cek blokir (Maksimal 2x percobaan salah)
-        if (RateLimiter::tooManyAttempts($throttleKey, 2)) {
+        // 2. Cek blokir (Maksimal 5x percobaan salah)
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
             $minutes = ceil($seconds / 60);
 
@@ -95,7 +107,7 @@ class AuthController extends Controller
         // 4. JIKA GAGAL: Catat kegagalan (Blokir 300 detik = 5 menit)
         RateLimiter::hit($throttleKey, 300);
 
-        $sisaPercobaan = 2 - RateLimiter::attempts($throttleKey);
+        $sisaPercobaan = 5 - RateLimiter::attempts($throttleKey);
         $pesanError = ($sisaPercobaan > 0) 
             ? "NIP atau Password salah! (Sisa percobaan perangkat: {$sisaPercobaan}x)" 
             : "Terlalu banyak kegagalan. Perangkat Anda diblokir selama 5 menit.";

@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <div class="mt-4 pb-20" x-data="{ modalTambah: false, modalEdit: false, modalImport: false, editData: {}, actionUrlEdit: '' }">
     
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -27,7 +28,7 @@
             </button>
         </div>
     </div>
-
+    
     @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-2xl mb-6 flex items-center shadow-sm">
             <i class="fas fa-check-circle mr-3 text-xl"></i>
@@ -167,7 +168,7 @@
                 </p>
             </div>
 
-            <form action="{{ route('admin.satker.import') }}" method="POST" enctype="multipart/form-data" x-data="{ fileName: '' }">
+            <form id="formImportSatker" action="{{ route('admin.satker.import') }}" method="POST" enctype="multipart/form-data" x-data="{ fileName: '' }">
                 @csrf
                 <div class="mb-8 text-center">
                     <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-3xl cursor-pointer transition-all group"
@@ -311,4 +312,17 @@
     </div>
 
 </div>
+<script>
+    document.getElementById('formImportSatker').addEventListener('submit', function() {
+        Swal.fire({
+            title: 'Sedang Mengimport Data...',
+            html: 'Mohon tunggu, sistem sedang memproses file Excel kamu. <br> <b>Jangan menutup halaman ini!</b>',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    });
+</script>
 @endsection

@@ -1,6 +1,9 @@
 @extends('layouts.auth')
 
 @section('content')
+{{-- Memanggil JS reCAPTCHA --}}
+{!! NoCaptcha::renderJs() !!}
+
 <form action="{{ route('admin.login.post') }}" method="POST">
     @csrf
     
@@ -37,6 +40,17 @@
         </div>
     </div>
 
+    {{-- Widget reCAPTCHA di Tengah --}}
+    <div class="mb-6 flex flex-col items-center">
+        {!! NoCaptcha::display() !!}
+        
+        @if ($errors->has('g-recaptcha-response'))
+            <p class="text-red-500 text-xs mt-2 font-semibold italic">
+                <i class="fas fa-robot"></i> {{ $errors->first('g-recaptcha-response') }}
+            </p>
+        @endif
+    </div>
+
     <div class="flex justify-end mb-8">
         <a href="#" onclick="alert('Silakan hubungi staf IT untuk mereset password Admin Anda.')" 
            class="text-sm font-semibold text-[#1075BC] hover:text-[#0c5c94] transition-colors">
@@ -55,16 +69,14 @@
         const toggleIcon = document.getElementById('toggleIcon');
 
         if (passwordInput.type === 'password') {
-            // PERBAIKAN 2: Saat mau dilihat, ubah jadi teks dan ikon mata terbuka
             passwordInput.type = 'text';
             toggleIcon.classList.remove('fa-eye-slash');
             toggleIcon.classList.add('fa-eye');
         } else {
-            // Saat mau disembunyikan, ubah jadi password dan ikon mata dicoret
             passwordInput.type = 'password';
             toggleIcon.classList.remove('fa-eye');
             toggleIcon.classList.add('fa-eye-slash');
         }
     }
 </script>
-@endsection
+@endsection*

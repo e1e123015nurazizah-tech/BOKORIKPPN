@@ -51,24 +51,35 @@ class MaintenanceController extends Controller
         try {
             $count = 0;
             foreach ($pengajuans as $p) {
-                // 1. Cari jalur file PDF di semua relasi detail
+                
+                // 1. Kumpulkan semua jalur file dari masing-masing relasi
+                // Kita langsung ambil dari database karena jalurnya sudah lengkap (contoh: 'berkas_gajiweb/namafile.pdf')
                 $filePaths = [];
-                if ($p->detailGaji) $filePaths[] = $p->detailGaji->file_kelengkapan;
-                if ($p->detailPpnpn) $filePaths[] = $p->detailPpnpn->file_kelengkapan;
-                if ($p->detailSkpp) $filePaths[] = $p->detailSkpp->file_kelengkapan;
+                
+                if ($p->detailGaji && !empty($p->detailGaji->file_kelengkapan)) {
+                    $filePaths[] = $p->detailGaji->file_kelengkapan;
+                }
+                
+                if ($p->detailPpnpn && !empty($p->detailPpnpn->file_kelengkapan)) {
+                    $filePaths[] = $p->detailPpnpn->file_kelengkapan;
+                }
+                
+                if ($p->detailSkpp && !empty($p->detailSkpp->file_kelengkapan)) {
+                    $filePaths[] = $p->detailSkpp->file_kelengkapan;
+                }
 
-                // 2. Hapus file fisik dari folder storage
+                // 2. Hapus file fisik dengan disk 'local' (Otomatis masuk ke folder aslinya)
                 foreach ($filePaths as $path) {
-                    if ($path && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
+                    if (Storage::disk('local')->exists($path)) {
+                        Storage::disk('local')->delete($path);
                     }
                 }
 
-                // 3. Eksekusi Database
+                // 3. Eksekusi Database sesuai mode yang dipilih
                 if ($mode == 'semua') {
                     $p->delete(); 
                 } else {
-                    // JANGAN gunakan NULL, gunakan string kosong '' agar database tidak protes
+                    // Update database jadi string kosong agar tidak error
                     if ($p->detailGaji) $p->detailGaji->update(['file_kelengkapan' => '']);
                     if ($p->detailPpnpn) $p->detailPpnpn->update(['file_kelengkapan' => '']);
                     if ($p->detailSkpp) $p->detailSkpp->update(['file_kelengkapan' => '']);

@@ -1,6 +1,6 @@
 @php
     // 1. KUNCI TAHUN AWAL (Tidak akan berubah selamanya)
-    $tahunMulai = 2024; 
+    $tahunMulai = 2026; 
 
     // 2. AMBIL TAHUN KOMPUTER SAAT INI SECARA REAL-TIME
     $tahunSekarang = date('Y'); 
@@ -298,7 +298,7 @@
                 </div>
             </header>
 
-            <main class="px-4 py-6 md:px-12 md:py-10 flex-1 w-full max-w-full overflow-x-hidden">
+            <main class="px-4 py-6 md:px-12 md:py-10 flex-1 min-w-0 w-full max-w-full overflow-x-hidden">
                 @yield('content')
             </main>
         </div>
