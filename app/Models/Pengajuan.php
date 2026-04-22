@@ -49,4 +49,22 @@ class Pengajuan extends Model
     {
         return $this->belongsTo(Satker::class, 'satker_id');
     }
+
+    // Tambahan blok untuk menggantikan Foreign Key Cascade MyISAM
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($pengajuan) {
+            if ($pengajuan->detailGaji()->exists()) {
+                $pengajuan->detailGaji()->delete();
+            }
+            if ($pengajuan->detailPpnpn()->exists()) {
+                $pengajuan->detailPpnpn()->delete();
+            }
+            if ($pengajuan->detailSkpp()->exists()) {
+                $pengajuan->detailSkpp()->delete();
+            }
+        });
+    }
 }

@@ -26,4 +26,16 @@ class Satker extends Authenticatable
     {
         return $this->belongsTo(Admin::class, 'admin_skpp_id');
     }
+    // Relasi ke Pengajuan
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($satker) {
+            // Hapus pengajuan satu per satu agar detailnya ikut bersih
+            $satker->pengajuans->each(function ($pengajuan) {
+                $pengajuan->delete();
+            });
+        });
+    }
 }
